@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="utf-8">
@@ -177,7 +177,7 @@ function gerar(){
   const t=v('tipo'),b=v('base'),r=v('replica'),va=v('vantiga'),vn=v('vnova'),ls=v('linksenha'),id=ids[b];
   const descrReplica=(b==='PRODUÇÃO')?'':(r==='SIM'?'COM RÉPLICA DO BANCO DE DADOS DA PRODUÇÃO':'');
   const diaHora=(b!=='PRODUÇÃO')? '(X) O QUANTO ANTES POSSÍVEL, PODENDO PARAR O SISTEMA A QUALQUER MOMENTO' : obterDiaHora();
-  const texto=ATUALIZAÇÃO DE ${t} DA BASE ${b} (ID ${id}) DA VERSÃO ${va} PARA ${vn} ${descrReplica}
+  const texto=`ATUALIZAÇÃO DE ${t} DA BASE ${b} (ID ${id}) DA VERSÃO ${va} PARA ${vn} ${descrReplica}
 
 Prezados(as), bom dia
 Solicito atualização de ${t} da base ${b} (ID ${id}) da versão ${va} para ${vn}
@@ -217,7 +217,7 @@ Se sim, por gentileza nos encaminhe a documentação ou um passo-a-passo necess�
 31 99295-8674 - FELIPE
 
 - Qual melhor DIA e HORÁRIO para realizar a parada do sistema e atualização?
-${diaHora};
+${diaHora}`;
   document.getElementById('saida').value=texto;
 }
 
@@ -225,10 +225,10 @@ ${diaHora};
 function obterDiaHora(){
   if(radioFixo.checked){
     const dt=v('fixo');
-    return dt?DIA ${fmt(dt)}:'⇒ informe a data/horário fixo';
+    return dt?`DIA ${fmt(dt)}`:'⇒ informe a data/horário fixo';
   }
   const ini=v('ini'),fim=v('fim');
-  return (ini&&fim)?ENTRE DIA ${fmt(ini)} ATÉ DIA ${fmt(fim)}:'⇒ informe o intervalo completo';
+  return (ini&&fim)?`ENTRE DIA ${fmt(ini)} ATÉ DIA ${fmt(fim)}`:'⇒ informe o intervalo completo';
 }
 
 // Copia texto para clipboard
@@ -240,5 +240,3 @@ function copiar(){
 </script>
 </body>
 </html>
-
-
