@@ -1,0 +1,244 @@
+ <!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Gerador de Solicitação RM</title>
+  <style>
+    :root{
+      font-size:16px;
+      --gap:1rem;
+    }
+    body{
+      font-family:system-ui,sans-serif;
+      background:#f5f7fa;
+      margin:0;
+      display:flex;
+      justify-content:center;
+      padding:2rem;
+    }
+    .card{
+      background:#fff;
+      border-radius:1rem;
+      box-shadow:0 4px 12px rgba(0,0,0,.08);
+      padding:2rem;
+      width:100%;
+      max-width:820px;
+      display:flex;
+      flex-direction:column;
+      gap:var(--gap);
+    }
+    h1{margin:0 0 .5rem;font-size:1.5rem;text-align:center;}
+    .field{display:flex;flex-direction:column;gap:.25rem;}
+    .field.inline{flex-direction:row;align-items:center;gap:.5rem;flex-wrap:wrap;}
+    label{font-weight:600;}
+    select,input[type="datetime-local"],input[type="text"],input[type="url"]{
+      padding:.5rem .75rem;
+      border:1px solid #cbd5e1;
+      border-radius:.5rem;
+      font-size:1rem;
+    }
+    button{
+      background:#2563eb;color:#fff;border:none;padding:.6rem 1.2rem;font-size:1rem;border-radius:.5rem;cursor:pointer;transition:background .2s;
+    }
+    button:hover{background:#1e4fd1;}
+    textarea{
+      width:flex;height:380px;padding:1rem;border:1px solid #cbd5e1;border-radius:.5rem;font-family:Arial, Helvetica, sans-serif;font-size:.95rem;resize:vertical;white-space:pre;
+    }
+    .actions{display:flex;gap:var(--gap);flex-wrap:wrap;justify-content:center;}
+    fieldset{border:1px solid #cbd5e1;border-radius:.75rem;padding:1rem;}
+    .disabled{opacity:.6;pointer-events:none;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Gerador de Solicitação RM</h1>
+
+    <!-- Tipo -->
+    <div class="field">
+      <label for="tipo">Tipo</label>
+      <select id="tipo">
+        <option>PATCH</option>
+        <option>RELEASE</option>
+      </select>
+    </div>
+
+    <!-- Base -->
+    <div class="field">
+      <label for="base">Base</label>
+      <select id="base">
+        <option>PRODUÇÃO</option>
+        <option>TESTE 02</option>
+        <option>TESTE 03</option>
+        <option>TESTE 04</option>
+      </select>
+    </div>
+
+    <!-- Replica -->
+    <div class="field" id="replicaField">
+      <label for="replica">Replica</label>
+      <select id="replica">
+        <option value=""> </option>
+        <option>SIM</option>
+        <option>NÃO</option>
+      </select>
+    </div>
+
+    <!-- Versões -->
+    <div class="field">
+      <label for="vantiga">Versão atual</label>
+      <input id="vantiga" type="text" placeholder="Ex: 12.1.2406.281"/>
+    </div>
+
+    <div class="field">
+      <label for="vnova">Versão nova</label>
+      <input id="vnova" type="text" placeholder="Ex: 12.1.2406.282"/>
+    </div>
+
+    <!-- Link senha -->
+    <div class="field inline">
+      <label for="linksenha">Link senha</label>
+      <input id="linksenha" type="url" placeholder="Cole aqui o link" style="flex:1"/>
+      <button type="button" onclick="window.open('https://getmypassword.cloudtotvs.com.br/home','_blank')">Abrir site</button>
+    </div>
+
+    <!-- Dia / Horário (somente produção) -->
+    <fieldset id="diaHoraFieldset" style="display:none;">
+      <legend style="padding:0 .5rem;font-weight:600;">Dia / Horário (somente PRODUÇÃO)</legend>
+
+      <div class="field inline">
+        <input type="radio" name="tipodata" id="tipoFixo" value="fixo" checked/>
+        <label for="tipoFixo">Dia fixo</label>
+        <input type="datetime-local" id="fixo" />
+      </div>
+
+      <div class="field inline">
+        <input type="radio" name="tipodata" id="tipoIntervalo" value="intervalo" />
+        <label for="tipoIntervalo">Intervalo</label>
+        <input type="datetime-local" id="ini" disabled/>
+        <span>até</span>
+        <input type="datetime-local" id="fim" disabled/>
+      </div>
+    </fieldset>
+
+    <!-- Ações -->
+    <div class="actions">
+      <button type="button" onclick="gerar()">Gerar texto</button>
+      <button type="button" onclick="copiar()">Copiar texto</button>
+    </div>
+
+    <!-- Saída -->
+    <textarea id="saida" readonly placeholder="O texto gerado aparecerá aqui"></textarea>
+  </div>
+
+<script>
+// IDs das bases
+const ids={"PRODUÇÃO":125369,"TESTE 02":125371,"TESTE 03":125373,"TESTE 04":125375};
+
+// Elementos DOM principais
+const baseSel=document.getElementById('base');
+const replicaField=document.getElementById('replicaField');
+const diaHoraField=document.getElementById('diaHoraFieldset');
+const radioFixo=document.getElementById('tipoFixo');
+const radioIntervalo=document.getElementById('tipoIntervalo');
+const fixoInput=document.getElementById('fixo');
+const iniInput=document.getElementById('ini');
+const fimInput=document.getElementById('fim');
+
+// Exibe/oculta campos conforme a base escolhida
+baseSel.addEventListener('change',()=>{
+  const prod=baseSel.value==='PRODUÇÃO';
+  diaHoraField.style.display=prod?'block':'none';
+  replicaField.style.display=prod?'none':'flex';
+  document.getElementById('replica').value='';
+  if(!prod){ // limpa datas ao trocar para teste
+    fixoInput.value='';iniInput.value='';fimInput.value='';
+  }
+});
+
+// Habilita/desabilita inputs de data/horário
+function updateDateInputs(){
+  const fixoChecked=radioFixo.checked;
+  fixoInput.disabled=!fixoChecked;
+  iniInput.disabled=fimInput.disabled=fixoChecked;
+}
+radioFixo.addEventListener('change',updateDateInputs);
+radioIntervalo.addEventListener('change',updateDateInputs);
+
+// Inicializa estado
+baseSel.dispatchEvent(new Event('change'));
+updateDateInputs();
+
+// Função utilitária
+function v(id){return document.getElementById(id).value.trim();}
+function fmt(dt){const d=new Date(dt);return d.toLocaleDateString('pt-BR')+" ÀS "+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}  
+
+// Gera o texto completo
+function gerar(){
+  const t=v('tipo'),b=v('base'),r=v('replica'),va=v('vantiga'),vn=v('vnova'),ls=v('linksenha'),id=ids[b];
+  const descrReplica=(b==='PRODUÇÃO')?'':(r==='SIM'?'COM RÉPLICA DO BANCO DE DADOS DA PRODUÇÃO':'');
+  const diaHora=(b!=='PRODUÇÃO')? '(X) O QUANTO ANTES POSSÍVEL, PODENDO PARAR O SISTEMA A QUALQUER MOMENTO' : obterDiaHora();
+  const texto=ATUALIZAÇÃO DE ${t} DA BASE ${b} (ID ${id}) DA VERSÃO ${va} PARA ${vn} ${descrReplica}
+
+Prezados(as), bom dia
+Solicito atualização de ${t} da base ${b} (ID ${id}) da versão ${va} para ${vn}
+
+- Qual AMBIENTE/BASE devemos atualizar? PRODUÇÃO, TESTE, HOMOLOGAÇÃO, DESENVOLVIMENTO?
+${b} (ID ${id})
+
+- Se tratando de atualização nos ambientes TESTE, HOMOLOGAÇÃO ou DESENVOLVIMENTO, será necessário REPLICAR o Banco de Dados de PRODUÇÃO sobre o ambiente a ser atualizado?
+${b==='PRODUÇÃO'?'':r}
+
+- Por favor nos informe qual a ATUAL VERSÃO que seu ambiente a ser atualizado se encontra hoje?
+${va}
+
+- Para qual VERSÃO específica devemos atualizar seu ambiente RM?
+${vn}
+
+- De que forma acessa o sistema RM atualmente neste ambiente que vamos atualizar? Via GO-GLOBAL ou SMARTCLIENT?
+AMBOS
+
+- É utilizado PORTAL RM neste ambiente que vamos atualizar? Caso, sim, por favor nos informe as URLs dos portais utilizados e um usuário e senha para podermos validar ao final do processo de atualização.
+Portal: https://empresade${id}.rm.cloudtotvs.com.br/Corpore.Net/
+Meu RH: https://empresade${id}.rm.cloudtotvs.com.br/FrameHTML/Web/App/RH/PortalMeuRH/
+Portal BackOffice: https://empresade${id}.rm.cloudtotvs.com.br/FrameHTML/Web/App/Bco/Portal-BackOffice/
+
+usuário: totvs
+senha: ${ls}
+
+- Nos informe um USUÁRIO e SENHA de acesso ao RM com permissão de Supervisor.
+usuário: totvs
+senha: ${ls}
+
+- O Ambiente a ser atualizado possui alguma CUSTOMIZAÇÃO no Sistema RM ou Portal RM?
+Se sim, por gentileza nos encaminhe a documentação ou um passo-a-passo necessário para que customização funcione corretamente após processo de atualização.
+
+- Por favor nos informe TELEFONE para contato, caso necessário o analista contatá-los;
+31 3242-9718 - FELIPE/IGOR
+31 99295-8674 - FELIPE
+
+- Qual melhor DIA e HORÁRIO para realizar a parada do sistema e atualização?
+${diaHora};
+  document.getElementById('saida').value=texto;
+}
+
+// Obtém texto Dia/Hora para PRODUÇÃO
+function obterDiaHora(){
+  if(radioFixo.checked){
+    const dt=v('fixo');
+    return dt?DIA ${fmt(dt)}:'⇒ informe a data/horário fixo';
+  }
+  const ini=v('ini'),fim=v('fim');
+  return (ini&&fim)?ENTRE DIA ${fmt(ini)} ATÉ DIA ${fmt(fim)}:'⇒ informe o intervalo completo';
+}
+
+// Copia texto para clipboard
+function copiar(){
+  const txt=document.getElementById('saida');
+  if(!txt.value){alert('Gere o texto primeiro!');return;}
+  navigator.clipboard.writeText(txt.value).then(()=>alert('Texto copiado para a área de transferência!'),()=>{txt.select();document.execCommand('copy');alert('Texto copiado!');});
+}
+</script>
+</body>
+</html>
+
+
