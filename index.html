@@ -42,7 +42,7 @@
     }
     button:hover{background:#1e4fd1;}
     textarea{
-      width:flex;height:380px;padding:1rem;border:1px solid #cbd5e1;border-radius:.5rem;font-family:Arial, Helvetica, sans-serif;font-size:.95rem;resize:vertical;white-space:pre;
+      width:100%;box-sizing:border-box;height:380px;padding:1rem;border:1px solid #cbd5e1;border-radius:.5rem;font-family:Arial, Helvetica, sans-serif;font-size:.95rem;resize:vertical;white-space:pre;
     }
     .actions{display:flex;gap:var(--gap);flex-wrap:wrap;justify-content:center;}
     fieldset{border:1px solid #cbd5e1;border-radius:.75rem;padding:1rem;}
@@ -131,68 +131,109 @@
   </div>
 
 <script>
-// IDs das bases
-const ids={"PRODUÇÃO":125369,"TESTE 02":125371,"TESTE 03":125373,"TESTE 04":125375};
+document.addEventListener('DOMContentLoaded', () => {
+  // IDs das bases
+  const ids = {"PRODUÇÃO": 125369, "TESTE 02": 125371, "TESTE 03": 125373, "TESTE 04": 125375};
+  const PRODUCAO_BASE_NAME = 'PRODUÇÃO';
 
-// Elementos DOM principais
-const baseSel=document.getElementById('base');
-const replicaField=document.getElementById('replicaField');
-const diaHoraField=document.getElementById('diaHoraFieldset');
-const radioFixo=document.getElementById('tipoFixo');
-const radioIntervalo=document.getElementById('tipoIntervalo');
-const fixoInput=document.getElementById('fixo');
-const iniInput=document.getElementById('ini');
-const fimInput=document.getElementById('fim');
+  // Elementos DOM principais
+  const tipoSelect = document.getElementById('tipo');
+  const baseSelect = document.getElementById('base');
+  const replicaSelect = document.getElementById('replica');
+  const vantigaInput = document.getElementById('vantiga');
+  const vnovaInput = document.getElementById('vnova');
+  const linksenhaInput = document.getElementById('linksenha');
+  const saidaTextarea = document.getElementById('saida');
 
-// Exibe/oculta campos conforme a base escolhida
-baseSel.addEventListener('change',()=>{
-  const prod=baseSel.value==='PRODUÇÃO';
-  diaHoraField.style.display=prod?'block':'none';
-  replicaField.style.display=prod?'none':'flex';
-  document.getElementById('replica').value='';
-  if(!prod){ // limpa datas ao trocar para teste
-    fixoInput.value='';iniInput.value='';fimInput.value='';
+  const replicaField = document.getElementById('replicaField');
+  const diaHoraFieldset = document.getElementById('diaHoraFieldset');
+  const radioFixo = document.getElementById('tipoFixo');
+  const radioIntervalo = document.getElementById('tipoIntervalo');
+  const fixoInput = document.getElementById('fixo');
+  const iniInput = document.getElementById('ini');
+  const fimInput = document.getElementById('fim');
+
+  // Exibe/oculta campos conforme a base escolhida
+  baseSelect.addEventListener('change', () => {
+    const isProducao = baseSelect.value === PRODUCAO_BASE_NAME;
+    diaHoraFieldset.style.display = isProducao ? 'block' : 'none';
+    replicaField.style.display = isProducao ? 'none' : 'flex';
+    replicaSelect.value = ''; // Reset replica selection
+    if (!isProducao) { // limpa datas ao trocar para teste
+      fixoInput.value = '';
+      iniInput.value = '';
+      fimInput.value = '';
+    }
+  });
+
+  // Habilita/desabilita inputs de data/horário
+  function updateDateInputsState() {
+    const fixoChecked = radioFixo.checked;
+    fixoInput.disabled = !fixoChecked;
+    iniInput.disabled = fixoChecked;
+    fimInput.disabled = fixoChecked;
   }
-});
+  radioFixo.addEventListener('change', updateDateInputsState);
+  radioIntervalo.addEventListener('change', updateDateInputsState);
 
-// Habilita/desabilita inputs de data/horário
-function updateDateInputs(){
-  const fixoChecked=radioFixo.checked;
-  fixoInput.disabled=!fixoChecked;
-  iniInput.disabled=fimInput.disabled=fixoChecked;
-}
-radioFixo.addEventListener('change',updateDateInputs);
-radioIntervalo.addEventListener('change',updateDateInputs);
+  // Funções utilitárias
+  function getTrimmedValueFromElement(element) { return element.value.trim(); }
+  function formatDateTimeString(dateTimeString) {
+    if (!dateTimeString) return '';
+    const d = new Date(dateTimeString);
+    if (isNaN(d.getTime())) return 'Data inválida'; // Handle invalid date strings
+    return d.toLocaleDateString('pt-BR') + " ÀS " + d.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+  }
 
-// Inicializa estado
-baseSel.dispatchEvent(new Event('change'));
-updateDateInputs();
+  // Gera o texto completo
+  window.gerar = function() { // Expose to global scope for onclick
+    const tipo = getTrimmedValueFromElement(tipoSelect);
+    const base = getTrimmedValueFromElement(baseSelect);
+    const replica = getTrimmedValueFromElement(replicaSelect);
+    const versaoAntiga = getTrimmedValueFromElement(vantigaInput);
+    const versaoNova = getTrimmedValueFromElement(vnovaInput);
+    const linkSenha = getTrimmedValueFromElement(linksenhaInput);
+    const baseId = ids[base];
 
-// Função utilitária
-function v(id){return document.getElementById(id).value.trim();}
-function fmt(dt){const d=new Date(dt);return d.toLocaleDateString('pt-BR')+" ÀS "+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}  
+    // Validação básica
+    if (!versaoAntiga || !versaoNova || !linkSenha) {
+      alert('Por favor, preencha a versão atual, a nova versão e o link da senha.');
+      return;
+    }
 
-// Gera o texto completo
-function gerar(){
-  const t=v('tipo'),b=v('base'),r=v('replica'),va=v('vantiga'),vn=v('vnova'),ls=v('linksenha'),id=ids[b];
-  const descrReplica=(b==='PRODUÇÃO')?'':(r==='SIM'?'COM RÉPLICA DO BANCO DE DADOS DA PRODUÇÃO':'');
-  const diaHora=(b!=='PRODUÇÃO')? '(X) O QUANTO ANTES POSSÍVEL, PODENDO PARAR O SISTEMA A QUALQUER MOMENTO' : obterDiaHora();
-  const texto=`ATUALIZAÇÃO DE ${t} DA BASE ${b} (ID ${id}) DA VERSÃO ${va} PARA ${vn} ${descrReplica}
+    let diaHoraTexto;
+    if (base === PRODUCAO_BASE_NAME) {
+      diaHoraTexto = obterDiaHoraFormatadoParaProducao();
+      if (diaHoraTexto.startsWith('⇒')) { // Error message from obterDiaHoraFormatadoParaProducao
+        alert(diaHoraTexto.substring(2)); // Remove '⇒ '
+        return;
+      }
+    } else {
+      diaHoraTexto = '(X) O QUANTO ANTES POSSÍVEL, PODENDO PARAR O SISTEMA A QUALQUER MOMENTO';
+    }
+
+    const descrReplicaTexto = (base === PRODUCAO_BASE_NAME) ? '' :
+                              (replica === 'SIM' ? ' COM RÉPLICA DO BANCO DE DADOS DA PRODUÇÃO' :
+                              (replica === 'NÃO' ? ' SEM RÉPLICA DO BANCO DE DADOS DA PRODUÇÃO' : ''));
+
+    const replicaInfoParaPergunta = (base === PRODUCAO_BASE_NAME) ? 'N/A (PRODUÇÃO não replica)' : replica;
+
+    const texto = `ATUALIZAÇÃO DE ${tipo} DA BASE ${base} (ID ${baseId}) DA VERSÃO ${versaoAntiga} PARA ${versaoNova}${descrReplicaTexto}
 
 Prezados(as), bom dia
-Solicito atualização de ${t} da base ${b} (ID ${id}) da versão ${va} para ${vn}
+Solicito atualização de ${tipo} da base ${base} (ID ${baseId}) da versão ${versaoAntiga} para ${versaoNova}
 
 - Qual AMBIENTE/BASE devemos atualizar? PRODUÇÃO, TESTE, HOMOLOGAÇÃO, DESENVOLVIMENTO?
-${b} (ID ${id})
+${base} (ID ${baseId})
 
 - Se tratando de atualização nos ambientes TESTE, HOMOLOGAÇÃO ou DESENVOLVIMENTO, será necessário REPLICAR o Banco de Dados de PRODUÇÃO sobre o ambiente a ser atualizado?
-${b==='PRODUÇÃO'?'':r}
+${replicaInfoParaPergunta}
 
 - Por favor nos informe qual a ATUAL VERSÃO que seu ambiente a ser atualizado se encontra hoje?
-${va}
+${versaoAntiga}
 
 - Para qual VERSÃO específica devemos atualizar seu ambiente RM?
-${vn}
+${versaoNova}
 
 - De que forma acessa o sistema RM atualmente neste ambiente que vamos atualizar? Via GO-GLOBAL ou SMARTCLIENT?
 AMBOS
@@ -200,14 +241,14 @@ AMBOS
 - É utilizado PORTAL RM neste ambiente que vamos atualizar? Caso, sim, por favor nos informe as URLs dos portais utilizados e um usuário e senha para podermos validar ao final do processo de atualização.
 Portal: https://empresade${id}.rm.cloudtotvs.com.br/Corpore.Net/
 Meu RH: https://empresade${id}.rm.cloudtotvs.com.br/FrameHTML/Web/App/RH/PortalMeuRH/
-Portal BackOffice: https://empresade${id}.rm.cloudtotvs.com.br/FrameHTML/Web/App/Bco/Portal-BackOffice/
+Portal BackOffice: https://empresade${baseId}.rm.cloudtotvs.com.br/FrameHTML/Web/App/Bco/Portal-BackOffice/
 
 usuário: totvs
-senha: ${ls}
+senha: ${linkSenha}
 
 - Nos informe um USUÁRIO e SENHA de acesso ao RM com permissão de Supervisor.
 usuário: totvs
-senha: ${ls}
+senha: ${linkSenha}
 
 - O Ambiente a ser atualizado possui alguma CUSTOMIZAÇÃO no Sistema RM ou Portal RM?
 Se sim, por gentileza nos encaminhe a documentação ou um passo-a-passo necessário para que customização funcione corretamente após processo de atualização.
@@ -217,26 +258,43 @@ Se sim, por gentileza nos encaminhe a documentação ou um passo-a-passo necess�
 31 99295-8674 - FELIPE
 
 - Qual melhor DIA e HORÁRIO para realizar a parada do sistema e atualização?
-${diaHora}`;
-  document.getElementById('saida').value=texto;
-}
-
-// Obtém texto Dia/Hora para PRODUÇÃO
-function obterDiaHora(){
-  if(radioFixo.checked){
-    const dt=v('fixo');
-    return dt?`DIA ${fmt(dt)}`:'⇒ informe a data/horário fixo';
+${diaHoraTexto}`;
+    saidaTextarea.value = texto;
   }
-  const ini=v('ini'),fim=v('fim');
-  return (ini&&fim)?`ENTRE DIA ${fmt(ini)} ATÉ DIA ${fmt(fim)}`:'⇒ informe o intervalo completo';
-}
 
-// Copia texto para clipboard
-function copiar(){
-  const txt=document.getElementById('saida');
-  if(!txt.value){alert('Gere o texto primeiro!');return;}
-  navigator.clipboard.writeText(txt.value).then(()=>alert('Texto copiado para a área de transferência!'),()=>{txt.select();document.execCommand('copy');alert('Texto copiado!');});
-}
+  // Obtém texto Dia/Hora para PRODUÇÃO
+  function obterDiaHoraFormatadoParaProducao() {
+    if (radioFixo.checked) {
+      const dataFixa = getTrimmedValueFromElement(fixoInput);
+      return dataFixa ? `DIA ${formatDateTimeString(dataFixa)}` : '⇒ Informe a data/horário fixo para PRODUÇÃO.';
+    }
+    const dataInicio = getTrimmedValueFromElement(iniInput);
+    const dataFim = getTrimmedValueFromElement(fimInput);
+    if (dataInicio && dataFim) {
+      return `ENTRE DIA ${formatDateTimeString(dataInicio)} ATÉ DIA ${formatDateTimeString(dataFim)}`;
+    }
+    return '⇒ Informe o intervalo completo (início e fim) para PRODUÇÃO.';
+  }
+
+  // Copia texto para clipboard
+  window.copiar = function() { // Expose to global scope for onclick
+    if (!saidaTextarea.value) {
+      alert('Gere o texto primeiro!');
+      return;
+    }
+    navigator.clipboard.writeText(saidaTextarea.value).then(() => {
+      alert('Texto copiado para a área de transferência!');
+    }, () => {
+      saidaTextarea.select();
+      document.execCommand('copy'); // Fallback
+      alert('Texto copiado! (usando método alternativo)');
+    });
+  }
+
+  // Inicializa estado dos campos dinâmicos
+  baseSelect.dispatchEvent(new Event('change'));
+  updateDateInputsState();
+});
 </script>
 </body>
 </html>
