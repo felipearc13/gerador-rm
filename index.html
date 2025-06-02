@@ -1,300 +1,730 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <title>Gerador de Solicitação RM</title>
-  <style>
-    :root{
-      font-size:16px;
-      --gap:1rem;
-    }
-    body{
-      font-family:system-ui,sans-serif;
-      background:#f5f7fa;
-      margin:0;
-      display:flex;
-      justify-content:center;
-      padding:2rem;
-    }
-    .card{
-      background:#fff;
-      border-radius:1rem;
-      box-shadow:0 4px 12px rgba(0,0,0,.08);
-      padding:2rem;
-      width:100%;
-      max-width:820px;
-      display:flex;
-      flex-direction:column;
-      gap:var(--gap);
-    }
-    h1{margin:0 0 .5rem;font-size:1.5rem;text-align:center;}
-    .field{display:flex;flex-direction:column;gap:.25rem;}
-    .field.inline{flex-direction:row;align-items:center;gap:.5rem;flex-wrap:wrap;}
-    label{font-weight:600;}
-    select,input[type="datetime-local"],input[type="text"],input[type="url"]{
-      padding:.5rem .75rem;
-      border:1px solid #cbd5e1;
-      border-radius:.5rem;
-      font-size:1rem;
-    }
-    button{
-      background:#2563eb;color:#fff;border:none;padding:.6rem 1.2rem;font-size:1rem;border-radius:.5rem;cursor:pointer;transition:background .2s;
-    }
-    button:hover{background:#1e4fd1;}
-    textarea{
-      width:100%;box-sizing:border-box;height:380px;padding:1rem;border:1px solid #cbd5e1;border-radius:.5rem;font-family:Arial, Helvetica, sans-serif;font-size:.95rem;resize:vertical;white-space:pre;
-    }
-    .actions{display:flex;gap:var(--gap);flex-wrap:wrap;justify-content:center;}
-    fieldset{border:1px solid #cbd5e1;border-radius:.75rem;padding:1rem;}
-    .disabled{opacity:.6;pointer-events:none;}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitação de Atualização RM</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --text: #333;
+            --text-light: #fff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s ease;
+        }
+
+        .dark-mode {
+            --primary: #1a252f;
+            --secondary: #2980b9;
+            --accent: #c0392b;
+            --light: #2c3e50;
+            --dark: #1a252f;
+            --text: #ecf0f1;
+            --text-light: #ecf0f1;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+            transition: background-color 0.5s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            background-color: var(--primary);
+            color: var(--text-light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .header-content {
+            position: relative;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            padding: 0 40px;
+        }
+
+        .toggle-container {
+            position: absolute;
+            top: 0;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .toggle-container {
+                position: relative;
+                display: inline-flex;
+                margin-top: 15px;
+                right: auto;
+                top: auto;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                padding: 0;
+            }
+        }
+
+        .toggle-label {
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--secondary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        @media (min-width: 992px) {
+            .app-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .form-section, .result-section {
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .dark-mode .form-section, 
+        .dark-mode .result-section {
+            background: var(--dark);
+            color: var(--text-light);
+        }
+
+        h2 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+            display: flex;
+            align-items: center;
+        }
+
+        h2 i {
+            margin-right: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            background: white;
+            color: var(--text);
+        }
+
+        .dark-mode select, 
+        .dark-mode input, 
+        .dark-mode textarea {
+            background: #34495e;
+            color: var(--text-light);
+            border-color: #2c3e50;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-accent {
+            background: var(--accent);
+        }
+
+        .btn-accent:hover {
+            background: #c0392b;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .password-link {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .password-link input {
+            flex: 1;
+        }
+
+        .password-link button {
+            flex-shrink: 0;
+        }
+
+        .date-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .date-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            background: #f9f9f9;
+        }
+
+        .dark-mode .date-option {
+            background: #34495e;
+            border-color: #2c3e50;
+        }
+
+        .date-option input[type="radio"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .date-fields {
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: var(--border-radius);
+            margin-top: 10px;
+        }
+
+        .dark-mode .date-fields {
+            background: #2c3e50;
+        }
+
+        .date-fields label {
+            margin-top: 10px;
+            display: block;
+        }
+
+        .date-fields input {
+            margin-bottom: 10px;
+        }
+
+        #resultText {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            background: #f9f9f9;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-y: auto;
+        }
+
+        .dark-mode #resultText {
+            background: #2c3e50;
+            border-color: #34495e;
+            color: var(--text-light);
+        }
+
+        .copy-btn {
+            margin-top: 15px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .dark-mode .footer {
+            color: var(--text-light);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: var(--secondary);
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .contact-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        @media (min-width: 480px) {
+            .contact-group {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Gerador de Solicitação RM</h1>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1><i class="fas fa-sync-alt"></i> Solicitação de Atualização RM</h1>
+                <p>Preencha o formulário abaixo para gerar sua solicitação de atualização</p>
+                <div class="toggle-container">
+                    <span class="toggle-label">Modo Escuro</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </header>
 
-    <!-- Tipo -->
-    <div class="field">
-      <label for="tipo">Tipo</label>
-      <select id="tipo">
-        <option>PATCH</option>
-        <option>RELEASE</option>
-      </select>
+        <div class="app-container">
+            <section class="form-section">
+                <h2><i class="fas fa-edit"></i> Dados da Atualização</h2>
+                <form id="updateForm">
+                    <div class="form-group">
+                        <label for="tipo">Tipo de Atualização:</label>
+                        <select id="tipo" required>
+                            <option value="">Selecione o tipo...</option>
+                            <option value="PATCH">PATCH</option >
+                            <option value="RELEASE">RELEASE</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nomebase">Nome da Base:</label>
+                        <select id="nomebase" required>
+                            <option value="">Selecione a base...</option>
+                            <option value="PRODUÇÃO">PRODUÇÃO</option>
+                            <option value="TESTE 02">TESTE 02</option>
+                            <option value="TESTE 03">TESTE 03</option>
+                            <option value="TESTE 04">TESTE 04</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id">ID da Base:</label>
+                        <input type="text" id="id" readonly>
+                    </div>
+
+                    <div id="replicaGroup" class="form-group hidden">
+                        <label>Replica Banco?</label>
+                        <select id="replica">
+                            <option value="">Selecione...</option>
+                            <option value="SIM">SIM</option>
+                            <option value="NÃO">NÃO</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vantiga">Versão Atual:</label>
+                        <input type="text" id="vantiga" placeholder="Ex: 12.1.2502.100" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vnova">Versão Nova:</label>
+                        <input type="text" id="vnova" placeholder="Ex: 12.1.2502.102" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="linkSenha">Link da Senha (Portal e Supervisor):</label>
+                        <div class="password-link">
+                            <input type="text" id="linkSenha" placeholder="Cole o link gerado aqui" required>
+                            <button type="button" class="btn" onclick="window.open('https://getmypassword.cloudtotvs.com.br/home', '_blank')">
+                                <i class="fas fa-key"></i> Gerar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contatos para Atualização:</label>
+                        <div class="contact-group">
+                            <div>
+                                <label for="contato1">Contato 1:</label>
+                                <input type="text" id="contato1" placeholder="Ex: 31 0000-0000 - NOME" required>
+                            </div>
+                            <div>
+                                <label for="contato2">Contato 2:</label>
+                                <input type="text" id="contato2" placeholder="Ex: 31 0000-0000 - NOME" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Horário para Atualização:</label>
+                        <div class="date-options">
+                            <label class="date-option">
+                                <input type="radio" name="diahora" value="opcao1" checked>
+                                A QUALQUER MOMENTO
+                            </label>
+                            
+                            <label class="date-option">
+                                <input type="radio" name="diahora" value="opcao2">
+                                DIA FIXO
+                            </label>
+                            
+                            <div id="opcao2Fields" class="date-fields hidden">
+                                <label for="dataHoraFixa">Data e Hora:</label>
+                                <input type="datetime-local" id="dataHoraFixa">
+                            </div>
+                            
+                            <label class="date-option">
+                                <input type="radio" name="diahora" value="opcao3">
+                                INTERVALO
+                            </label>
+                            
+                            <div id="opcao3Fields" class="date-fields hidden">
+                                <label for="dataHoraInicio">De:</label>
+                                <input type="datetime-local" id="dataHoraInicio">
+                                <label for="dataHoraFim">Até:</label>
+                                <input type="datetime-local" id="dataHoraFim">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-block" onclick="generateText()">
+                        <i class="fas fa-file-alt"></i> Gerar Solicitação
+                    </button>
+                </form>
+            </section>
+
+            <section class="result-section">
+                <h2><i class="fas fa-file-contract"></i> Texto Gerado</h2>
+                <textarea id="resultText" readonly></textarea>
+                <button id="copyBtn" class="btn btn-block btn-accent copy-btn" onclick="copyText()">
+                    <i class="fas fa-copy"></i> Copiar Texto
+                </button>
+            </section>
+        </div>
+
+        <div class="footer">
+            <p>Solicitação de Atualização RM - Gerador Automático</p>
+        </div>
     </div>
 
-    <!-- Base -->
-    <div class="field">
-      <label for="base">Base</label>
-      <select id="base">
-        <option>PRODUÇÃO</option>
-        <option>TESTE 02</option>
-        <option>TESTE 03</option>
-        <option>TESTE 04</option>
-      </select>
+    <div class="notification" id="notification">
+        Texto copiado com sucesso!
     </div>
 
-    <!-- Replica -->
-    <div class="field" id="replicaField">
-      <label for="replica">Replica</label>
-      <select id="replica">
-        <option value=""> </option>
-        <option>SIM</option>
-        <option>NÃO</option>
-      </select>
-    </div>
+    <script>
+        // Mapeamento de NOMEBASE para ID
+        const baseToId = {
+            "PRODUÇÃO": "125369",
+            "TESTE 02": "125371",
+            "TESTE 03": "125373",
+            "TESTE 04": "125375"
+        };
 
-    <!-- Versões -->
-    <div class="field">
-      <label for="vantiga">Versão atual</label>
-      <input id="vantiga" type="text" placeholder="Ex: 12.1.2406.281"/>
-    </div>
+        // Elementos DOM
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const nomebaseSelect = document.getElementById('nomebase');
+        const idInput = document.getElementById('id');
+        const replicaGroup = document.getElementById('replicaGroup');
+        const replicaSelect = document.getElementById('replica');
+        const diahoraRadios = document.querySelectorAll('input[name="diahora"]');
+        const opcao2Fields = document.getElementById('opcao2Fields');
+        const opcao3Fields = document.getElementById('opcao3Fields');
+        const notification = document.getElementById('notification');
 
-    <div class="field">
-      <label for="vnova">Versão nova</label>
-      <input id="vnova" type="text" placeholder="Ex: 12.1.2406.282"/>
-    </div>
+        // Atualizar ID quando selecionar nomebase
+        nomebaseSelect.addEventListener('change', function() {
+            const nomebase = this.value;
+            const id = baseToId[nomebase] || '';
+            idInput.value = id;
 
-    <!-- Link senha -->
-    <div class="field inline">
-      <label for="linksenha">Link senha</label>
-      <input id="linksenha" type="url" placeholder="Cole aqui o link" style="flex:1"/>
-      <button type="button" onclick="window.open('https://getmypassword.cloudtotvs.com.br/home','_blank')">Abrir site</button>
-    </div>
+            // Mostrar/ocultar replicaGroup
+            if (nomebase === 'PRODUÇÃO') {
+                replicaGroup.classList.add('hidden');
+                replicaSelect.value = '';
+            } else {
+                replicaGroup.classList.remove('hidden');
+            }
+        });
 
-    <!-- Dia / Horário (somente produção) -->
-    <fieldset id="diaHoraFieldset" style="display:none;">
-      <legend style="padding:0 .5rem;font-weight:600;">Dia / Horário (somente PRODUÇÃO)</legend>
+        // Mostrar/ocultar campos de data/hora conforme opção de diahora
+        diahoraRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'opcao2') {
+                    opcao2Fields.classList.remove('hidden');
+                    opcao3Fields.classList.add('hidden');
+                } else if (this.value === 'opcao3') {
+                    opcao2Fields.classList.add('hidden');
+                    opcao3Fields.classList.remove('hidden');
+                } else {
+                    opcao2Fields.classList.add('hidden');
+                    opcao3Fields.classList.add('hidden');
+                }
+            });
+        });
 
-      <div class="field inline">
-        <input type="radio" name="tipodata" id="tipoFixo" value="fixo" checked/>
-        <label for="tipoFixo">Dia fixo</label>
-        <input type="datetime-local" id="fixo" />
-      </div>
+        // Função para alternar modo escuro
+        darkModeToggle.addEventListener('change', function() {
+            document.body.classList.toggle('dark-mode', this.checked);
+            
+            // Salvar preferência no localStorage
+            localStorage.setItem('darkMode', this.checked ? 'enabled' : 'disabled');
+        });
 
-      <div class="field inline">
-        <input type="radio" name="tipodata" id="tipoIntervalo" value="intervalo" />
-        <label for="tipoIntervalo">Intervalo</label>
-        <input type="datetime-local" id="ini" disabled/>
-        <span>até</span>
-        <input type="datetime-local" id="fim" disabled/>
-      </div>
-    </fieldset>
+        // Verificar preferência de modo escuro salva
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
 
-    <!-- Ações -->
-    <div class="actions">
-      <button type="button" onclick="gerar()">Gerar texto</button>
-      <button type="button" onclick="copiar()">Copiar texto</button>
-    </div>
+        // Função para gerar o texto
+        function generateText() {
+            const tipo = document.getElementById('tipo').value;
+            const nomebase = nomebaseSelect.value;
+            const id = idInput.value;
+            const vantiga = document.getElementById('vantiga').value;
+            const vnova = document.getElementById('vnova').value;
+            const replica = replicaSelect.value;
+            const linkSenha = document.getElementById('linkSenha').value;
+            const contato1 = document.getElementById('contato1').value;
+            const contato2 = document.getElementById('contato2').value;
+            
+            // Determinar [DESCREPLICA]
+            let descreplica = '';
+            if (nomebase !== 'PRODUÇÃO' && replica === 'SIM') {
+                descreplica = 'COM RÉPLICA DO BANCO DE DADOS DA PRODUÇÃO';
+            }
 
-    <!-- Saída -->
-    <textarea id="saida" readonly placeholder="O texto gerado aparecerá aqui"></textarea>
-  </div>
+            // Tratar DIAHORA
+            let diahoraText = '';
+            const diahoraValue = document.querySelector('input[name="diahora"]:checked').value;
+            
+            if (diahoraValue === 'opcao1') {
+                diahoraText = "O QUANTO ANTES POSSÍVEL, PODENDO PARAR O SISTEMA A QUALQUER MOMENTO";
+            } else if (diahoraValue === 'opcao2') {
+                const dataHoraFixa = document.getElementById('dataHoraFixa').value;
+                if (dataHoraFixa) {
+                    const date = new Date(dataHoraFixa);
+                    const dia = String(date.getDate()).padStart(2, '0');
+                    const mes = String(date.getMonth() + 1).padStart(2, '0');
+                    const ano = date.getFullYear();
+                    const horas = String(date.getHours()).padStart(2, '0');
+                    const minutos = String(date.getMinutes()).padStart(2, '0');
+                    diahoraText = `DIA ${dia}/${mes}/${ano} ÁS ${horas}:${minutos}`;
+                }
+            } else if (diahoraValue === 'opcao3') {
+                const dataHoraInicio = document.getElementById('dataHoraInicio').value;
+                const dataHoraFim = document.getElementById('dataHoraFim').value;
+                if (dataHoraInicio && dataHoraFim) {
+                    const dateInicio = new Date(dataHoraInicio);
+                    const dateFim = new Date(dataHoraFim);
+                    const diaInicio = String(dateInicio.getDate()).padStart(2, '0');
+                    const mesInicio = String(dateInicio.getMonth() + 1).padStart(2, '0');
+                    const anoInicio = dateInicio.getFullYear();
+                    const horasInicio = String(dateInicio.getHours()).padStart(2, '0');
+                    const minutosInicio = String(dateInicio.getMinutes()).padStart(2, '0');
+                    const diaFim = String(dateFim.getDate()).padStart(2, '0');
+                    const mesFim = String(dateFim.getMonth() + 1).padStart(2, '0');
+                    const anoFim = dateFim.getFullYear();
+                    const horasFim = String(dateFim.getHours()).padStart(2, '0');
+                    const minutosFim = String(dateFim.getMinutes()).padStart(2, '0');
+                    diahoraText = `ENTRE DIA ${diaInicio}/${mesInicio}/${anoInicio} ÁS ${horasInicio}:${minutosInicio} ATÉ DIA ${diaFim}/${mesFim}/${anoFim} ÁS ${horasFim}:${minutosFim}`;
+                }
+            }
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  // IDs das bases
-  const ids = {"PRODUÇÃO": 125369, "TESTE 02": 125371, "TESTE 03": 125373, "TESTE 04": 125375};
-  const PRODUCAO_BASE_NAME = 'PRODUÇÃO';
+            // Construir o texto
+            let text = `ATUALIZAÇÃO DE ${tipo} DA BASE ${nomebase} (ID ${id}) DA VERSÃO ${vantiga} PARA ${vnova} ${descreplica}\n\n`;
+            text += `Prezados(as), bom dia\n`;
+            text += `Solicito atualização de ${tipo} da base ${nomebase} (ID ${id}) da versão ${vantiga} para ${vnova}\n\n`;
 
-  // Elementos DOM principais
-  const tipoSelect = document.getElementById('tipo');
-  const baseSelect = document.getElementById('base');
-  const replicaSelect = document.getElementById('replica');
-  const vantigaInput = document.getElementById('vantiga');
-  const vnovaInput = document.getElementById('vnova');
-  const linksenhaInput = document.getElementById('linksenha');
-  const saidaTextarea = document.getElementById('saida');
+            text += `- Qual AMBIENTE/BASE devemos atualizar? PRODUÇÃO, TESTE, HOMOLOGAÇÃO, DESENVOLVIMENTO?\n`;
+            text += `${nomebase} (ID ${id})\n\n`;
 
-  const replicaField = document.getElementById('replicaField');
-  const diaHoraFieldset = document.getElementById('diaHoraFieldset');
-  const radioFixo = document.getElementById('tipoFixo');
-  const radioIntervalo = document.getElementById('tipoIntervalo');
-  const fixoInput = document.getElementById('fixo');
-  const iniInput = document.getElementById('ini');
-  const fimInput = document.getElementById('fim');
+            // Só inclui a pergunta de réplica se não for PRODUÇÃO
+            if (nomebase !== 'PRODUÇÃO') {
+                text += `- Se tratando de atualização nos ambientes TESTE, HOMOLOGAÇÃO ou DESENVOLVIMENTO, será necessário REPLICAR o Banco de Dados de PRODUÇÃO sobre o ambiente a ser atualizado?\n`;
+                text += `${replica}\n\n`;
+            }
 
-  // Exibe/oculta campos conforme a base escolhida
-  baseSelect.addEventListener('change', () => {
-    const isProducao = baseSelect.value === PRODUCAO_BASE_NAME;
-    diaHoraFieldset.style.display = isProducao ? 'block' : 'none';
-    replicaField.style.display = isProducao ? 'none' : 'flex';
-    replicaSelect.value = ''; // Reset replica selection
-    if (!isProducao) { // limpa datas ao trocar para teste
-      fixoInput.value = '';
-      iniInput.value = '';
-      fimInput.value = '';
-    }
-  });
+            text += `- Por favor nos informe qual a ATUAL VERSÃO que seu ambiente a ser atualizado se encontra hoje?\n`;
+            text += `${vantiga}\n\n`;
 
-  // Habilita/desabilita inputs de data/horário
-  function updateDateInputsState() {
-    const fixoChecked = radioFixo.checked;
-    fixoInput.disabled = !fixoChecked;
-    iniInput.disabled = fixoChecked;
-    fimInput.disabled = fixoChecked;
-  }
-  radioFixo.addEventListener('change', updateDateInputsState);
-  radioIntervalo.addEventListener('change', updateDateInputsState);
+            text += `- Para qual VERSÃO específica devemos atualizar seu ambiente RM?\n`;
+            text += `${vnova}\n\n`;
 
-  // Funções utilitárias
-  function getTrimmedValueFromElement(element) { return element.value.trim(); }
-  function formatDateTimeString(dateTimeString) {
-    if (!dateTimeString) return '';
-    const d = new Date(dateTimeString);
-    if (isNaN(d.getTime())) return 'Data inválida'; // Handle invalid date strings
-    return d.toLocaleDateString('pt-BR') + " ÀS " + d.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
-  }
+            text += `- De que forma acessa o sistema RM atualmente neste ambiente que vamos atualizar? Via GO-GLOBAL ou SMARTCLIENT?\n`;
+            text += `AMBOS\n\n`;
 
-  // Gera o texto completo
-  window.gerar = function() { // Expose to global scope for onclick
-    const tipo = getTrimmedValueFromElement(tipoSelect);
-    const base = getTrimmedValueFromElement(baseSelect);
-    const replica = getTrimmedValueFromElement(replicaSelect);
-    const versaoAntiga = getTrimmedValueFromElement(vantigaInput);
-    const versaoNova = getTrimmedValueFromElement(vnovaInput);
-    const linkSenha = getTrimmedValueFromElement(linksenhaInput);
-    const baseId = ids[base];
+            text += `- É utilizado PORTAL RM neste ambiente que vamos atualizar? Caso, sim, por favor nos informe as URLs dos portais utilizados e um usuário e senha para podermos validar ao final do processo de atualização.\n`;
+            text += `(Obs.: Informe a SENHA de forma segura, através do site https://getmypassword.cloudtotvs.com.br/home)\n\n`;
+            text += `Portal: https://empresade${id}.rm.cloudtotvs.com.br/Corpore.Net/\n`;
+            text += `Meu RH: https://empresade${id}.rm.cloudtotvs.com.br/FrameHTML/Web/App/RH/PortalMeuRH/\n`;
+            text += `Portal BackOffice: https://empresade${id}.rm.cloudtotvs.com.br/FrameHTML/Web/App/Bco/Portal-BackOffice/\n\n`;
+            text += `usuário: totvs\n`;
+            text += `senha: ${linkSenha}\n\n`;
 
-    // Validação básica
-    if (!versaoAntiga || !versaoNova || !linkSenha) {
-      alert('Por favor, preencha a versão atual, a nova versão e o link da senha.');
-      return;
-    }
+            text += `- Nos informe um USUÁRIO e SENHA de acesso ao RM com permissão de Supervisor.\n`;
+            text += `(Obs.: Informe a SENHA de forma segura, através do site https://getmypassword.cloudtotvs.com.br/home)\n`;
+            text += `usuário: totvs\n`;
+            text += `senha: ${linkSenha}\n\n`;
 
-    let diaHoraTexto;
-    if (base === PRODUCAO_BASE_NAME) {
-      diaHoraTexto = obterDiaHoraFormatadoParaProducao();
-      if (diaHoraTexto.startsWith('⇒')) { // Error message from obterDiaHoraFormatadoParaProducao
-        alert(diaHoraTexto.substring(2)); // Remove '⇒ '
-        return;
-      }
-    } else {
-      diaHoraTexto = '(X) O QUANTO ANTES POSSÍVEL, PODENDO PARAR O SISTEMA A QUALQUER MOMENTO';
-    }
+            text += `- O Ambiente a ser atualizado possui alguma CUSTOMIZAÇÃO no Sistema RM ou Portal RM?\n`;
+            text += `Se sim, por gentileza nos encaminhe a documentação ou um passo-a-passo necessário para que customização funcione corretamente após processo de atualização.\n\n`;
 
-    const descrReplicaTexto = (base === PRODUCAO_BASE_NAME) ? '' :
-                              (replica === 'SIM' ? ' COM RÉPLICA DO BANCO DE DADOS DA PRODUÇÃO' :
-                              (replica === 'NÃO' ? ' SEM RÉPLICA DO BANCO DE DADOS DA PRODUÇÃO' : ''));
+            text += `- Por favor nos informe TELEFONE para contato, caso necessário o analista contatá-los;\n`;
+            text += `${contato1}\n`;
+            text += `${contato2}\n\n`;
 
-    const replicaInfoParaPergunta = (base === PRODUCAO_BASE_NAME) ? 'N/A (PRODUÇÃO não replica)' : replica;
+            text += `- Qual melhor DIA e HORÁRIO para realizar a parada do sistema e atualização?\n`;
+            text += `${diahoraText}\n\n`;
 
-    const texto = `ATUALIZAÇÃO DE ${tipo} DA BASE ${base} (ID ${baseId}) DA VERSÃO ${versaoAntiga} PARA ${versaoNova}${descrReplicaTexto}
+            document.getElementById('resultText').value = text;
+        }
 
-Prezados(as), bom dia
-Solicito atualização de ${tipo} da base ${base} (ID ${baseId}) da versão ${versaoAntiga} para ${versaoNova}
+        // Função para copiar o texto
+        function copyText() {
+            const textarea = document.getElementById('resultText');
+            textarea.select();
+            document.execCommand('copy');
+            
+            // Mostrar notificação
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
 
-- Qual AMBIENTE/BASE devemos atualizar? PRODUÇÃO, TESTE, HOMOLOGAÇÃO, DESENVOLVIMENTO?
-${base} (ID ${baseId})
+        // Inicializar data e hora para campos de data
+        const now = new Date();
+        const formattedNow = now.toISOString().slice(0, 16);
+        document.getElementById('dataHoraFixa').value = formattedNow;
+        document.getElementById('dataHoraInicio').value = formattedNow;
+        
+        // Adicionar 1 hora para o campo de fim
+        const endTime = new Date(now.getTime() + 60 * 60 * 1000);
+        document.getElementById('dataHoraFim').value = endTime.toISOString().slice(0, 16);
+        
+        // Preencher os campos de contato com valores padrão
+        //document.getElementById('contato1').value = "31 3242-9718 - FELIPE/IGOR";
+        //document.getElementById('contato2').value = "31 99295-8674 - FELIPE";
+        document.getElementById('vantiga').value = "12.1.2502.100";
+        document.getElementById('vnova').value = "12.1.2502.101";
 
-- Se tratando de atualização nos ambientes TESTE, HOMOLOGAÇÃO ou DESENVOLVIMENTO, será necessário REPLICAR o Banco de Dados de PRODUÇÃO sobre o ambiente a ser atualizado?
-${replicaInfoParaPergunta}
-
-- Por favor nos informe qual a ATUAL VERSÃO que seu ambiente a ser atualizado se encontra hoje?
-${versaoAntiga}
-
-- Para qual VERSÃO específica devemos atualizar seu ambiente RM?
-${versaoNova}
-
-- De que forma acessa o sistema RM atualmente neste ambiente que vamos atualizar? Via GO-GLOBAL ou SMARTCLIENT?
-AMBOS
-
-- É utilizado PORTAL RM neste ambiente que vamos atualizar? Caso, sim, por favor nos informe as URLs dos portais utilizados e um usuário e senha para podermos validar ao final do processo de atualização.
-Portal: https://empresade${id}.rm.cloudtotvs.com.br/Corpore.Net/
-Meu RH: https://empresade${id}.rm.cloudtotvs.com.br/FrameHTML/Web/App/RH/PortalMeuRH/
-Portal BackOffice: https://empresade${baseId}.rm.cloudtotvs.com.br/FrameHTML/Web/App/Bco/Portal-BackOffice/
-
-usuário: totvs
-senha: ${linkSenha}
-
-- Nos informe um USUÁRIO e SENHA de acesso ao RM com permissão de Supervisor.
-usuário: totvs
-senha: ${linkSenha}
-
-- O Ambiente a ser atualizado possui alguma CUSTOMIZAÇÃO no Sistema RM ou Portal RM?
-Se sim, por gentileza nos encaminhe a documentação ou um passo-a-passo necessário para que customização funcione corretamente após processo de atualização.
-
-- Por favor nos informe TELEFONE para contato, caso necessário o analista contatá-los;
-31 3242-9718 - FELIPE/IGOR
-31 99295-8674 - FELIPE
-
-- Qual melhor DIA e HORÁRIO para realizar a parada do sistema e atualização?
-${diaHoraTexto}`;
-    saidaTextarea.value = texto;
-  }
-
-  // Obtém texto Dia/Hora para PRODUÇÃO
-  function obterDiaHoraFormatadoParaProducao() {
-    if (radioFixo.checked) {
-      const dataFixa = getTrimmedValueFromElement(fixoInput);
-      return dataFixa ? `DIA ${formatDateTimeString(dataFixa)}` : '⇒ Informe a data/horário fixo para PRODUÇÃO.';
-    }
-    const dataInicio = getTrimmedValueFromElement(iniInput);
-    const dataFim = getTrimmedValueFromElement(fimInput);
-    if (dataInicio && dataFim) {
-      return `ENTRE DIA ${formatDateTimeString(dataInicio)} ATÉ DIA ${formatDateTimeString(dataFim)}`;
-    }
-    return '⇒ Informe o intervalo completo (início e fim) para PRODUÇÃO.';
-  }
-
-  // Copia texto para clipboard
-  window.copiar = function() { // Expose to global scope for onclick
-    if (!saidaTextarea.value) {
-      alert('Gere o texto primeiro!');
-      return;
-    }
-    navigator.clipboard.writeText(saidaTextarea.value).then(() => {
-      alert('Texto copiado para a área de transferência!');
-    }, () => {
-      saidaTextarea.select();
-      document.execCommand('copy'); // Fallback
-      alert('Texto copiado! (usando método alternativo)');
-    });
-  }
-
-  // Inicializa estado dos campos dinâmicos
-  baseSelect.dispatchEvent(new Event('change'));
-  updateDateInputsState();
-});
-</script>
+    </script>
 </body>
 </html>
