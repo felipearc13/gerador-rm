@@ -5,41 +5,331 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitação de Atualização RM</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            /* Cores e Variáveis */
+            --primary: #2c3e50;
+            --primary-dark: #1a252f;
+            --secondary: #3498db;
+            --secondary-dark: #2980b9;
+            --secondary-light: #ebf5fb;
+            --accent: #e74c3c;
+            --warning: #f39c12;
+            --bg-body: #f4f6f8;
+            --bg-card: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #dce1e6;
+            
+            --radius: 8px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --transition: all 0.25s ease-in-out;
+        }
+
+        .dark-mode {
+            --primary: #1a252f;
+            --primary-dark: #0f151a;
+            --secondary: #2980b9;
+            --secondary-dark: #1f618d;
+            --secondary-light: #2c3e50;
+            --bg-body: #121212;
+            --bg-card: #1e272e;
+            --text-main: #ecf0f1;
+            --text-muted: #bdc3c7;
+            --border-color: #353b48;
+            --shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 20px;
+            min-height: 100vh;
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            padding: 40px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.5s ease;
+        }
+
+        .dark-mode header {
+            background: linear-gradient(135deg, #0f151a, #2c3e50);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .header-content h1 { 
+            font-size: 2.2rem;
+            margin-bottom: 5px; 
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            line-height: 1.2;
+        }
+        
+        .header-content h1 i {
+            margin-right: 10px;
+            opacity: 0.9;
+        }
+
+        .header-content p { 
+            opacity: 0.9; 
+            font-size: 1.1rem; 
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+        }
+
+        /* TOGGLE MODE */
+        .toggle-wrapper { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.15); padding: 5px 15px; border-radius: 50px; backdrop-filter: blur(5px); }
+        .toggle-switch { position: relative; width: 44px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.2); transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--secondary); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* LAYOUT PRINCIPAL */
+        .app-grid { display: grid; grid-template-columns: 1fr; gap: 30px; }
+        @media(min-width: 992px) { .app-grid { grid-template-columns: 1.2fr 0.8fr; align-items: start; } }
+
+        .card { background: var(--bg-card); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); }
+        
+        h2 { 
+            color: var(--secondary); 
+            font-size: 1.4rem; 
+            margin-bottom: 25px; 
+            padding-bottom: 10px; 
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        /* FORMULÁRIO */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
+        
+        input[type="text"], input[type="number"], input[type="date"], input[type="time"], select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background: var(--bg-body);
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); background: var(--bg-card); }
+        
+        /* GRUPO DE VERSÃO */
+        .version-row { display: flex; align-items: center; gap: 10px; }
+        .version-row select { flex: 2; }
+        .version-row span { font-weight: bold; color: var(--text-muted); font-size: 1.2rem; }
+        .version-row input { flex: 1; }
+
+        /* LINK SENHA */
+        .password-row { display: flex; gap: 10px; }
+        .btn-icon { background: var(--primary); color: #fff; border: none; width: 46px; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+        .btn-icon:hover { background: var(--secondary); }
+
+        /* CONTATOS */
+        .contacts-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+        }
+        @media(max-width: 500px) { .contacts-grid { grid-template-columns: 1fr; } }
+        
+        small { color: var(--text-muted); font-size: 0.85rem; margin-top: 6px; display: block; }
+
+        /* AGENDAMENTO - CARTÕES SELECIONÁVEIS */
+        .scheduling-options { display: flex; flex-direction: column; gap: 15px; }
+
+        .radio-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: var(--transition);
+            background: var(--bg-body);
+        }
+
+        .radio-card:hover { border-color: var(--secondary); }
+        .radio-card.active { 
+            border-color: var(--secondary); 
+            background: var(--bg-card);
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.1);
+        }
+
+        .radio-header {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            gap: 12px;
+        }
+
+        .radio-header input[type="radio"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--secondary); }
+        .radio-header label { margin: 0; cursor: pointer; flex: 1; font-weight: 600; }
+
+        .radio-content {
+            padding: 0 15px 20px 15px;
+            border-top: 1px solid var(--border-color);
+            margin-top: -5px;
+            animation: slideDown 0.3s ease-out;
+            background: var(--bg-card);
+        }
+        
+        .dark-mode .radio-content { background: rgba(255,255,255,0.03); }
+
+        .hidden { display: none; }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        
+        .datetime-label { 
+            grid-column: 1 / -1; 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: var(--secondary); 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            margin-top: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        /* BOTÕES DE AÇÃO */
+        .actions { display: flex; gap: 15px; margin-top: 30px; }
+        .btn { flex: 1; padding: 14px; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition); }
+        
+        .btn-primary { background: var(--secondary); color: #fff; }
+        .btn-primary:hover { background: var(--secondary-dark); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        
+        /* ESTILO DO BOTÃO LIMPAR ATUALIZADO (Sólido) */
+        .btn-warning { background: var(--warning); color: #fff; }
+        .btn-warning:hover { filter: brightness(0.9); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+        .btn-copy { background: var(--primary); color: #fff; width: 100%; margin-top: 0; }
+        .btn-copy:hover { background: var(--primary-dark); }
+
+        /* RESULTADO */
+        textarea {
+            width: 100%;
+            height: 500px;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background: var(--bg-body);
+            color: var(--text-main); /* CORREÇÃO AQUI */
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        /* MODAL DE CONFIRMAÇÃO */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); z-index: 2000; 
+            display: flex; justify-content: center; align-items: center; 
+            backdrop-filter: blur(3px); 
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .modal-content { 
+            background: var(--bg-card); padding: 30px; border-radius: var(--radius); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 400px; width: 90%; 
+            text-align: center; border: 1px solid var(--border-color); transform: scale(0.9); transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+
+        .modal-content h3 { color: var(--warning); margin-bottom: 10px; font-size: 1.4rem; }
+        .modal-content p { color: var(--text-main); margin-bottom: 25px; }
+        
+        .modal-actions { display: flex; gap: 10px; justify-content: center; }
+        .modal-actions .btn { padding: 10px 20px; font-size: 0.9rem; }
+        
+        /* Estilos específicos para botões do modal */
+        .modal-actions .btn-outline { background: transparent; border: 2px solid var(--text-muted); color: var(--text-main); }
+        .modal-actions .btn-outline:hover { background: var(--text-muted); color: white; }
+
+        /* Footer & Notification */
+        .footer { text-align: center; padding: 30px; font-size: 0.9rem; color: var(--text-muted); }
+        .notification {
+            position: fixed; top: 20px; right: 20px; background: #27ae60; color: white;
+            padding: 12px 24px; border-radius: var(--radius); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateX(150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000; font-weight: 600; display: flex; align-items: center; gap: 10px;
+        }
+        .notification.show { transform: translateX(0); }
+
+        /* Responsividade */
+        @media(max-width: 768px) {
+            header { flex-direction: column; text-align: center; gap: 20px; }
+            .version-row { flex-direction: column; align-items: stretch; }
+            .version-row span { text-align: center; transform: rotate(90deg); margin: -5px 0; }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
             <div class="header-content">
-                <h1><i class="fas fa-sync-alt"></i> Solicitação de Atualização RM</h1>
-                <p>Preencha o formulário abaixo para gerar sua solicitação de atualização</p>
-                <div class="toggle-container">
-                    <span class="toggle-label">Modo Escuro</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="darkModeToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+                <h1><i class="fas fa-sync-alt"></i> SOLICITAÇÃO RM</h1>
+                <p>Gerador de chamados de atualização</p>
+            </div>
+            <div class="toggle-wrapper">
+                <i class="fas fa-moon"></i>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </label>
             </div>
         </header>
 
-        <div class="app-container">
-            <section class="form-section">
-                <h2><i class="fas fa-edit"></i> Dados da Atualização</h2>
+        <div class="app-grid">
+            <!-- Coluna Esquerda: Formulário -->
+            <section class="card">
+                <h2><i class="fas fa-edit"></i> Dados da Solicitação</h2>
                 <form id="updateForm">
+                    <!-- Tipo e Base -->
                     <div class="form-group">
-                        <label for="tipo">Tipo de Atualização:</label>
+                        <label for="tipo">Tipo de Atualização</label>
                         <select id="tipo" required>
-                            <option value="">Selecione o tipo...</option>
+                            <option value="">Selecione...</option>
                             <option value="PATCH">PATCH</option >
                             <option value="RELEASE">RELEASE</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="nomebase">Nome da Base:</label>
+                        <label for="nomebase">Base de Dados</label>
                         <select id="nomebase" required>
-                            <option value="">Selecione a base...</option>
+                            <option value="">Selecione...</option>
                             <option value="PRODUÇÃO">PRODUÇÃO</option>
                             <option value="TESTE 02">TESTE 02</option>
                             <option value="TESTE 03">TESTE 03</option>
@@ -48,12 +338,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="id">ID da Base:</label>
-                        <input type="text" id="id" readonly>
+                        <label for="id">ID da Base</label>
+                        <input type="text" id="id" readonly placeholder="ID será preenchido automaticamente" style="background: rgba(0,0,0,0.03);">
                     </div>
 
                     <div id="replicaGroup" class="form-group hidden">
-                        <label>Replica Banco?</label>
+                        <label>Replicar Banco?</label>
                         <select id="replica">
                             <option value="">Selecione...</option>
                             <option value="SIM">SIM</option>
@@ -61,96 +351,429 @@
                         </select>
                     </div>
 
+                    <!-- Versões -->
                     <div class="form-group">
-                        <label for="vantiga">Versão Atual:</label>
-                        <input type="text" id="vantiga" placeholder="Ex: 12.1.2502.100" required>
+                        <label>Versão Atual</label>
+                        <div class="version-row">
+                            <select id="vantiga_release" required>
+                                <option value="">Release...</option>
+                                <option value="12.1.2506">12.1.2506</option>
+                                <option value="12.1.2510">12.1.2510</option>
+                                <option value="12.1.2602">12.1.2602</option>
+                            </select>
+                            <span>.</span>
+                            <input type="number" id="vantiga_patch" placeholder="Patch" min="100" max="400" required>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="vnova">Versão Nova:</label>
-                        <input type="text" id="vnova" placeholder="Ex: 12.1.2502.102" required>
+                        <label>Versão Nova</label>
+                        <div class="version-row">
+                            <select id="vnova_release" required>
+                                <option value="">Release...</option>
+                                <option value="12.1.2506">12.1.2506</option>
+                                <option value="12.1.2510">12.1.2510</option>
+                                <option value="12.1.2602">12.1.2602</option>
+                            </select>
+                            <span>.</span>
+                            <input type="number" id="vnova_patch" placeholder="Patch" min="100" max="400" required>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="linkSenha">Link da Senha (Portal e Supervisor):</label>
-                        <div class="password-link">
-                            <input type="text" id="linkSenha" placeholder="Cole o link gerado aqui" required>
-                            <button type="button" class="btn" onclick="window.open('https://getmypassword.cloudtotvs.com.br/home', '_blank')">
-                                <i class="fas fa-key"></i> Gerar
+                        <label for="linkSenha">Link da Senha</label>
+                        <div class="password-row">
+                            <input type="text" id="linkSenha" placeholder="Cole o link aqui..." required>
+                            <button type="button" class="btn-icon" title="Gerar Senha" onclick="window.open('https://getmypassword.cloudtotvs.com.br/home', '_blank', 'noopener,noreferrer')">
+                                <i class="fas fa-key"></i>
                             </button>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Contatos para Atualização:</label>
-                        <div class="contact-group">
-                            <div>
-                                <label for="contato1">Contato 1:</label>
-                                <input type="text" id="contato1" placeholder="Ex: 31 0000-0000 - NOME" required>
-                            </div>
-                            <div>
-                                <label for="contato2">Contato 2:</label>
-                                <input type="text" id="contato2" placeholder="Ex: 31 0000-0000 - NOME" required>
-                            </div>
+                        <label>Contatos</label>
+                        <div class="contacts-grid">
+                            <input type="text" id="contato1" class="phone-mask" placeholder="Contato 1" required>
+                            <input type="text" id="contato2" class="phone-mask" placeholder="Contato 2" required>
                         </div>
+                        <small>* Salvos automaticamente no navegador.</small>
                     </div>
 
+                    <!-- Agendamento Reformulado -->
                     <div class="form-group">
-                        <label>Horário para Atualização:</label>
-                        <div class="date-options">
-                            <label class="date-option">
-                                <input type="radio" name="diahora" value="opcao1" checked>
-                                A QUALQUER MOMENTO
-                            </label>
+                        <label>Agendamento</label>
+                        <div class="scheduling-options">
                             
-                            <label class="date-option">
-                                <input type="radio" name="diahora" value="opcao2">
-                                DIA FIXO
-                            </label>
-                            
-                            <div id="opcao2Fields" class="date-fields hidden">
-                                <label for="dataHoraFixa">Data e Hora:</label>
-                                <input type="datetime-local" id="dataHoraFixa">
+                            <!-- Opção 1 -->
+                            <div class="radio-card active" id="cardOption1" onclick="selectRadio('opcao1')">
+                                <div class="radio-header">
+                                    <input type="radio" id="radio1" name="diahora" value="opcao1" checked>
+                                    <label for="radio1">A Qualquer Momento</label>
+                                </div>
                             </div>
-                            
-                            <label class="date-option">
-                                <input type="radio" name="diahora" value="opcao3">
-                                INTERVALO
-                            </label>
-                            
-                            <div id="opcao3Fields" class="date-fields hidden">
-                                <label for="dataHoraInicio">De:</label>
-                                <input type="datetime-local" id="dataHoraInicio">
-                                <label for="dataHoraFim">Até:</label>
-                                <input type="datetime-local" id="dataHoraFim">
+
+                            <!-- Opção 2 -->
+                            <div class="radio-card" id="cardOption2" onclick="selectRadio('opcao2')">
+                                <div class="radio-header">
+                                    <input type="radio" id="radio2" name="diahora" value="opcao2">
+                                    <label for="radio2">Dia Fixo</label>
+                                </div>
+                                <div id="fieldsOption2" class="radio-content hidden">
+                                    <div class="datetime-row">
+                                        <div>
+                                            <label style="font-size:0.8rem">Data</label>
+                                            <input type="date" id="diaFixa">
+                                        </div>
+                                        <div>
+                                            <label style="font-size:0.8rem">Hora</label>
+                                            <input type="time" id="horaFixa" list="time-suggestions">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- Opção 3 -->
+                            <div class="radio-card" id="cardOption3" onclick="selectRadio('opcao3')">
+                                <div class="radio-header">
+                                    <input type="radio" id="radio3" name="diahora" value="opcao3">
+                                    <label for="radio3">Intervalo</label>
+                                </div>
+                                <div id="fieldsOption3" class="radio-content hidden">
+                                    <div class="datetime-label">Início</div>
+                                    <div class="datetime-row" style="margin-top:5px;">
+                                        <div><input type="date" id="diaInicio"></div>
+                                        <div><input type="time" id="horaInicio" list="time-suggestions"></div>
+                                    </div>
+                                    
+                                    <div class="datetime-label" style="margin-top:15px">Fim</div>
+                                    <div class="datetime-row" style="margin-top:5px;">
+                                        <div><input type="date" id="diaFim"></div>
+                                        <div><input type="time" id="horaFim" list="time-suggestions"></div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
-                    <button type="button" class="btn btn-block" onclick="generateText()">
-                        <i class="fas fa-file-alt"></i> Gerar Solicitação
-                    </button>
+                    <!-- Datalist para Horários -->
+                    <datalist id="time-suggestions"></datalist>
+
+                    <div class="actions">
+                        <!-- CLASSE ATUALIZADA PARA BTN-WARNING -->
+                        <button type="button" class="btn btn-warning" onclick="openResetModal()">
+                            <i class="fas fa-eraser"></i> Limpar
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="validateAndGenerate()">
+                            <i class="fas fa-magic"></i> Gerar Solicitação
+                        </button>
+                    </div>
                 </form>
             </section>
 
-            <section class="result-section">
-                <h2><i class="fas fa-file-contract"></i> Texto Gerado</h2>
-                <textarea id="resultText" readonly></textarea>
-                <button id="copyBtn" class="btn btn-block btn-accent copy-btn" onclick="copyText()">
-                    <i class="fas fa-copy"></i> Copiar Texto
-                </button>
+            <!-- Coluna Direita: Resultado -->
+            <section class="card">
+                <h2><i class="fas fa-code"></i> Resultado</h2>
+                <textarea id="resultText" readonly placeholder="O texto da solicitação aparecerá aqui..."></textarea>
+                <div style="margin-top: 20px;">
+                    <button id="copyBtn" class="btn btn-copy" onclick="copyText()">
+                        <i class="fas fa-copy"></i> Copiar Texto
+                    </button>
+                </div>
             </section>
         </div>
 
         <div class="footer">
-            <p>Solicitação de Atualização RM - Gerador Automático</p>
+            <p>&copy; 2025 Gerador RM v2.2</p>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> Atenção</h3>
+            <p>Tem certeza que deseja limpar todos os campos preenchidos?</p>
+            <div class="modal-actions">
+                <!-- Botão Cancelar com estilo outline para contraste no modal -->
+                <button class="btn btn-outline" onclick="closeResetModal()">Cancelar</button>
+                <!-- Botão Confirmar sólido -->
+                <button class="btn btn-warning" onclick="confirmReset()">Confirmar</button>
+            </div>
         </div>
     </div>
 
     <div class="notification" id="notification">
-        Texto copiado com sucesso!
+        <i class="fas fa-check-circle"></i> Copiado com sucesso!
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // --- DADOS ---
+        const baseToId = {
+            "PRODUÇÃO": "125369",
+            "TESTE 02": "125371",
+            "TESTE 03": "125373",
+            "TESTE 04": "125375"
+        };
+
+        // --- ELEMENTOS ---
+        const form = document.getElementById('updateForm');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const nomebaseSelect = document.getElementById('nomebase');
+        const idInput = document.getElementById('id');
+        const replicaGroup = document.getElementById('replicaGroup');
+        const replicaSelect = document.getElementById('replica');
+        const notification = document.getElementById('notification');
+
+        // --- INICIALIZAÇÃO E PREFERÊNCIAS ---
+        function loadPreferences() {
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+
+            try {
+                const fields = ['contato1', 'contato2'];
+                fields.forEach(id => {
+                    const val = localStorage.getItem(id);
+                    if (val) document.getElementById(id).value = val;
+                });
+
+                const vNovaRel = localStorage.getItem('lastVNovaRel');
+                const vNovaPatch = localStorage.getItem('lastVNovaPatch');
+
+                if (vNovaRel && vNovaPatch) {
+                    document.getElementById('vantiga_release').value = vNovaRel;
+                    document.getElementById('vantiga_patch').value = vNovaPatch;
+                    
+                    document.getElementById('vnova_release').value = vNovaRel;
+                    document.getElementById('vnova_patch').value = parseInt(vNovaPatch) + 1;
+                } else {
+                    document.getElementById('vantiga_release').value = "12.1.2506";
+                    document.getElementById('vantiga_patch').value = "100";
+                    document.getElementById('vnova_release').value = "12.1.2506";
+                    document.getElementById('vnova_patch').value = "101";
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // --- LÓGICA DE INTERFACE ---
+        darkModeToggle.addEventListener('change', function() {
+            document.body.classList.toggle('dark-mode', this.checked);
+            localStorage.setItem('darkMode', this.checked ? 'enabled' : 'disabled');
+        });
+
+        nomebaseSelect.addEventListener('change', function() {
+            const nomebase = this.value;
+            idInput.value = baseToId[nomebase] || '';
+            
+            if (nomebase === 'PRODUÇÃO') {
+                replicaGroup.classList.add('hidden');
+                replicaSelect.value = '';
+                replicaSelect.removeAttribute('required');
+            } else {
+                replicaGroup.classList.remove('hidden');
+                replicaSelect.setAttribute('required', 'required');
+            }
+        });
+
+        window.selectRadio = function(value) {
+            const radio = document.querySelector(`input[name="diahora"][value="${value}"]`);
+            if(radio) radio.checked = true;
+
+            document.querySelectorAll('.radio-card').forEach(card => card.classList.remove('active'));
+            const activeCardId = value === 'opcao1' ? 'cardOption1' : (value === 'opcao2' ? 'cardOption2' : 'cardOption3');
+            document.getElementById(activeCardId).classList.add('active');
+
+            document.getElementById('fieldsOption2').classList.add('hidden');
+            document.getElementById('fieldsOption3').classList.add('hidden');
+            
+            const dateInputs = ['diaFixa', 'horaFixa', 'diaInicio', 'horaInicio', 'diaFim', 'horaFim'];
+            dateInputs.forEach(id => document.getElementById(id).removeAttribute('required'));
+
+            if (value === 'opcao2') {
+                document.getElementById('fieldsOption2').classList.remove('hidden');
+                document.getElementById('diaFixa').setAttribute('required', 'required');
+                document.getElementById('horaFixa').setAttribute('required', 'required');
+            } else if (value === 'opcao3') {
+                document.getElementById('fieldsOption3').classList.remove('hidden');
+                document.getElementById('diaInicio').setAttribute('required', 'required');
+                document.getElementById('horaInicio').setAttribute('required', 'required');
+                document.getElementById('diaFim').setAttribute('required', 'required');
+                document.getElementById('horaFim').setAttribute('required', 'required');
+            }
+        }
+
+        function populateTimeDatalist() {
+            const datalist = document.getElementById('time-suggestions');
+            let html = '';
+            for (let h = 0; h < 24; h++) {
+                for (let m = 0; m < 60; m += 30) {
+                    const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                    html += `<option value="${time}"></option>`;
+                }
+            }
+            datalist.innerHTML = html;
+        }
+
+        function setInitialDates() {
+            const now = new Date();
+            let min = now.getMinutes() < 30 ? 30 : 0;
+            let hourAdd = now.getMinutes() >= 30 ? 1 : 0;
+            
+            const d = new Date(now);
+            d.setHours(d.getHours() + hourAdd);
+            d.setMinutes(min);
+            
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth()+1).padStart(2,'0');
+            const dd = String(d.getDate()).padStart(2,'0');
+            const hh = String(d.getHours()).padStart(2,'0');
+            const mi = String(d.getMinutes()).padStart(2,'0');
+            
+            const dateStr = `${yyyy}-${mm}-${dd}`;
+            const timeStr = `${hh}:${mi}`;
+            
+            ['diaFixa', 'diaInicio', 'diaFim'].forEach(id => document.getElementById(id).value = dateStr);
+            ['horaFixa', 'horaInicio', 'horaFim'].forEach(id => document.getElementById(id).value = timeStr);
+        }
+
+        document.querySelectorAll('.phone-mask').forEach(input => {
+            input.addEventListener('input', function (e) {
+                let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+                if (e.target.value.length < 16) { 
+                   e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+                }
+            });
+        });
+
+        // --- FUNÇÕES DE MODAL (Substituição do confirm) ---
+        window.openResetModal = function() {
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        window.closeResetModal = function() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        window.confirmReset = function() {
+            form.reset();
+            document.getElementById('resultText').value = '';
+            setInitialDates();
+            selectRadio('opcao1');
+            closeResetModal();
+        }
+
+        // --- GERAÇÃO E AÇÃO ---
+        window.validateAndGenerate = function() {
+            if (form.checkValidity()) {
+                generateText();
+                localStorage.setItem('contato1', document.getElementById('contato1').value);
+                localStorage.setItem('contato2', document.getElementById('contato2').value);
+                localStorage.setItem('lastVNovaRel', document.getElementById('vnova_release').value);
+                localStorage.setItem('lastVNovaPatch', document.getElementById('vnova_patch').value);
+            } else {
+                form.reportValidity();
+            }
+        }
+
+        function formatDateBR(dateStr) {
+            if(!dateStr) return '';
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        function generateText() {
+            const tipo = document.getElementById('tipo').value;
+            const nomebase = document.getElementById('nomebase').value;
+            const id = document.getElementById('id').value;
+            const vAntiga = `${document.getElementById('vantiga_release').value}.${document.getElementById('vantiga_patch').value}`;
+            const vNova = `${document.getElementById('vnova_release').value}.${document.getElementById('vnova_patch').value}`;
+            const linkSenha = document.getElementById('linkSenha').value;
+            const c1 = document.getElementById('contato1').value;
+            const c2 = document.getElementById('contato2').value;
+            
+            let replicaTxt = '';
+            if (nomebase !== 'PRODUÇÃO') {
+                const repVal = document.getElementById('replica').value;
+                if(repVal === 'SIM') replicaTxt = 'COM RÉPLICA DO BANCO DE DADOS DA PRODUÇÃO';
+            }
+
+            const mode = document.querySelector('input[name="diahora"]:checked').value;
+            let timeTxt = '';
+            
+            if(mode === 'opcao1') {
+                timeTxt = "O QUANTO ANTES POSSÍVEL, PODENDO PARAR O SISTEMA A QUALQUER MOMENTO";
+            } else if (mode === 'opcao2') {
+                const d = document.getElementById('diaFixa').value;
+                const h = document.getElementById('horaFixa').value;
+                timeTxt = `DIA ${formatDateBR(d)} ÁS ${h}`;
+            } else {
+                const d1 = document.getElementById('diaInicio').value;
+                const h1 = document.getElementById('horaInicio').value;
+                const d2 = document.getElementById('diaFim').value;
+                const h2 = document.getElementById('horaFim').value;
+                timeTxt = `ENTRE DIA ${formatDateBR(d1)} ÁS ${h1} ATÉ DIA ${formatDateBR(d2)} ÁS ${h2}`;
+            }
+
+            const t = `ATUALIZAÇÃO DE ${tipo} DA BASE ${nomebase} (ID ${id}) DA VERSÃO ${vAntiga} PARA ${vNova} ${replicaTxt}
+
+Prezados(as), bom dia
+Solicito atualização de ${tipo} da base ${nomebase} (ID ${id}) da versão ${vAntiga} para ${vNova}
+
+- Qual AMBIENTE/BASE devemos atualizar? PRODUÇÃO, TESTE, HOMOLOGAÇÃO, DESENVOLVIMENTO?
+${nomebase} (ID ${id})
+
+${nomebase !== 'PRODUÇÃO' ? `- Se tratando de atualização nos ambientes TESTE, HOMOLOGAÇÃO ou DESENVOLVIMENTO, será necessário REPLICAR o Banco de Dados de PRODUÇÃO sobre o ambiente a ser atualizado?\n${document.getElementById('replica').value}\n` : ''}
+- Por favor nos informe qual a ATUAL VERSÃO que seu ambiente a ser atualizado se encontra hoje?
+${vAntiga}
+
+- Para qual VERSÃO específica devemos atualizar seu ambiente RM?
+${vNova}
+
+- De que forma acessa o sistema RM atualmente neste ambiente que vamos atualizar? Via GO-GLOBAL ou SMARTCLIENT?
+AMBOS
+
+- É utilizado PORTAL RM neste ambiente que vamos atualizar? Caso, sim, por favor nos informe as URLs dos portais utilizados e um usuário e senha para podermos validar ao final do processo de atualização.
+(Obs.: Informe a SENHA de forma segura, através do site https://getmypassword.cloudtotvs.com.br/home)
+
+Portal: https://empresade${id}.rm.cloudtotvs.com.br/Corpore.Net/
+Meu RH: https://empresade${id}.rm.cloudtotvs.com.br/FrameHTML/Web/App/RH/PortalMeuRH/
+Portal BackOffice: https://empresade${id}.rm.cloudtotvs.com.br/FrameHTML/Web/App/Bco/Portal-BackOffice/
+
+usuário: totvs
+senha: ${linkSenha}
+
+- Nos informe um USUÁRIO e SENHA de acesso ao RM com permissão de Supervisor.
+(Obs.: Informe a SENHA de forma segura, através do site https://getmypassword.cloudtotvs.com.br/home)
+usuário: totvs
+senha: ${linkSenha}
+
+- O Ambiente a ser atualizado possui alguma CUSTOMIZAÇÃO no Sistema RM ou Portal RM?
+Se sim, por gentileza nos encaminhe a documentação ou um passo-a-passo necessário para que customização funcione corretamente após processo de atualização.
+
+- Por favor nos informe TELEFONE para contato, caso necessário o analista contatá-los;
+${c1}
+${c2}
+
+- Qual melhor DIA e HORÁRIO para realizar a parada do sistema e atualização?
+${timeTxt}`;
+
+            document.getElementById('resultText').value = t;
+        }
+
+        window.copyText = function() {
+            const el = document.getElementById('resultText');
+            if(!el.value) return alert("Gere o texto primeiro.");
+            el.select();
+            document.execCommand('copy');
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
+
+        populateTimeDatalist();
+        setInitialDates();
+        loadPreferences();
+        selectRadio('opcao1');
+    </script>
 </body>
 </html>
